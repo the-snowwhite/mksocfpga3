@@ -1,0 +1,12 @@
+package all_hm3_cores_cfg;
+
+parameter int total_num_hm3_cores = 2;
+parameter int num_fields_pr_hm3_core_cfg_t = 6;
+
+typedef struct packed { bit [3:0] num_inst; bit [3:0] num_subs; shortint base_addr; byte num_regs; bit [0:15] [7:0] core_name; bit [0:15] [7:0] type_name; } core_cfg_t;
+typedef core_cfg_t all_core_cfgs_t[total_num_hm3_cores];
+parameter string CORE_IDS[total_num_hm3_cores]  = '{ "ADC", "CAPSENSE" };
+parameter string CORE_FIELD[num_fields_pr_hm3_core_cfg_t]  = '{ "CORE_ID", "NUM_INSTANCES", "NUM_SUBS", "BASE_ADDR", "NUM_REGS", "TYPE_NAME" };
+
+
+endpackage : all_hm3_cores_cfg

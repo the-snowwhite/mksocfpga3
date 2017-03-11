@@ -1,0 +1,12 @@
+# sv to vhdl hostmot2 config settings import wrapper imports:
+# library pin;
+# use pin.Pintypes.all;
+
+#set_global_assignment -name VHDL_FILE ../../hm2/config/IntelFPGA/hostmot3_cfg.vhd
+
+# change the names of the 2 files below to recompile a new bitfile --->
+# Dev kit board specific:
+set_global_assignment -name SYSTEMVERILOG_FILE ../../hm3/configs/IntelFPGA/all_hm3_cores_cfg.pkg
+
+# I/O Daughterboard adaptor specific:
+#set_global_assignment -name VHDL_FILE ../../hm2/config/PIN_Cramps_gpio0_3x24_dpll_irq_adc_cap_spi.vhd -library pin
