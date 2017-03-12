@@ -1,12 +1,50 @@
 package all_hm3_cores_cfg;
 
+parameter int total_num_host_devices = 2;
 parameter int total_num_hm3_cores = 2;
-parameter int num_fields_pr_hm3_core_cfg_t = 6;
+//parameter int num_fields_pr_func_cfg_t = 8;
 
-typedef struct packed { bit [3:0] num_inst; bit [3:0] num_subs; shortint base_addr; byte num_regs; bit [0:15] [7:0] core_name; bit [0:15] [7:0] type_name; } core_cfg_t;
-typedef core_cfg_t all_core_cfgs_t[total_num_hm3_cores];
-parameter string CORE_IDS[total_num_hm3_cores]  = '{ "ADC", "CAPSENSE" };
-parameter string CORE_FIELD[num_fields_pr_hm3_core_cfg_t]  = '{ "CORE_ID", "NUM_INSTANCES", "NUM_SUBS", "BASE_ADDR", "NUM_REGS", "TYPE_NAME" };
+typedef struct packed { bit [4:0] insts; bit [4:0] subs; }numof_t;
+typedef struct packed { numof_t numof; bit [7:0] func_type; bit [0:15] [7:0] func_name; } active_cfg_t;
 
+typedef struct packed { bit [4:0] inst_out; bit [4:0] inst_in; } inst_cfg_t;
+typedef struct packed { bit [4:0] sub_out; bit [4:0] sub_in; } sub_cfg_t;
+
+typedef struct packed {
+    bit [0:15] [7:0] id_name;
+    inst_cfg_t inst;
+    sub_cfg_t sub;
+    shortint base_addr;
+    byte num_regs;
+    bit [0:15] [7:0] clk_name;
+    bit [0:15] [7:0] func_configure_name;
+} func_cfg_t;
+
+typedef struct packed { numof_t numof; func_cfg_t func_cfg; } run_cfg_t;
+typedef run_cfg_t all_device_cfgs_t[total_num_host_devices];
+
+parameter numof_t NULL_INST_SUB = '{ 00, 00 };
+parameter func_cfg_t ADC_DE0_NANO_SOC_DEVICE_CFG    = '{ "ADC_DE0_NANO",  '{ 04, 01 }, '{ 00, 00 }, 16'h0200, 02, "ADC_CLK", "DE0-Nano-SoC" };
+parameter func_cfg_t ADC_DE1_SOC_DEVICE_CFG               = '{ "ADC_DE1_SOC",     '{ 04, 01 }, '{ 00, 00 }, 16'h0200, 02, "ADC_CLK", "DE1-SoC"          };
+
+parameter all_device_cfgs_t VERBOSE_DEVICES = '{
+    ADC_DE0_NANO_SOC_DEVICE_CFG,
+    ADC_DE1_SOC_DEVICE_CFG
+};
+
+typedef func_cfg_t all_core_cfgs_t[total_num_hm3_cores];
+
+parameter func_cfg_t CAPSENSE_CORE_CFG     = '{ "CAPSENSE",    '{ 01, 00 }, '{ 00, 01 }, 16'h0300, 02, "LOW_CLK", ""              };
+parameter func_cfg_t STEPGEN_CORE_CFG       = '{ "STEPGEN"  ,    '{ 00, 00 }, '{ 02, 00 }, 16'h2000, 10, "LOW_CLK", ""              };
+
+parameter all_core_cfgs_t VERBOSE_CORES = '{
+    { NULL_INST_SUB, CAPSENSE_CORE_CFG },
+    { NULL_INST_SUB, STEPGEN_CORE_CFG }
+};
+
+
+//parameter string DEVICE_NAMES[total_num_host_devices]  = '{ "ADC" };
+//parameter string CORE_NAMES[total_num_hm3_cores]  = '{ "CAPSENSE" };
+//parameter string CORE_FIELDS[num_fields_pr_func_cfg_t]  = '{ inst_cfg_t, sub_cfg_t, "BASE_ADDR", "NUM_REGS", "CORE_NAME", "TYPE_NAME" };
 
 endpackage : all_hm3_cores_cfg
