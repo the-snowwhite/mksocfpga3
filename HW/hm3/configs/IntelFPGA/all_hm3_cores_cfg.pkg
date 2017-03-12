@@ -4,20 +4,22 @@ parameter int total_num_host_devices = 2;
 parameter int total_num_hm3_cores = 2;
 //parameter int num_fields_pr_func_cfg_t = 8;
 
+typedef bit [0:15] [7:0]  cfg_name_t ;
+
 typedef struct packed { bit [4:0] insts; bit [4:0] subs; }numof_t;
-typedef struct packed { numof_t numof; bit [7:0] func_type; bit [0:15] [7:0] func_name; } active_cfg_t;
+typedef struct packed { numof_t numof; bit [7:0] func_type; cfg_name_t func_name; } active_cfg_t;
 
 typedef struct packed { bit [4:0] inst_out; bit [4:0] inst_in; } inst_cfg_t;
 typedef struct packed { bit [4:0] sub_out; bit [4:0] sub_in; } sub_cfg_t;
 
 typedef struct packed {
-    bit [0:15] [7:0] id_name;
+    cfg_name_t id_name;
     inst_cfg_t inst;
     sub_cfg_t sub;
     shortint base_addr;
     byte num_regs;
-    bit [0:15] [7:0] clk_name;
-    bit [0:15] [7:0] func_configure_name;
+    cfg_name_t clk_name;
+    cfg_name_t func_configure_name;
 } func_cfg_t;
 
 typedef struct packed { numof_t numof; func_cfg_t func_cfg; } run_cfg_t;

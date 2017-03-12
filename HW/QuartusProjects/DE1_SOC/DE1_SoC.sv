@@ -209,7 +209,7 @@ parameter all_core_cfgs_t ALL_CORE_CFGS = VERBOSE_CORES;
 
 parameter active_cfg_t ADC_DEVICE               = '{ '{ 01, 00 }, "H","ADC_DE1_SOC" };
 parameter active_cfg_t CAPSENSE_CORE        = '{ '{ 01, 04 }, "C", "CAPSENSE"       };
-parameter num_active_cfgs = 2;
+parameter int num_active_cfgs = 2;
 typedef active_cfg_t active_cfgs_t[num_active_cfgs];
 parameter active_cfgs_t ACTIVE_CONFIGS = '{
    ADC_DEVICE,
@@ -217,8 +217,15 @@ parameter active_cfgs_t ACTIVE_CONFIGS = '{
 
 //#-------------------------------------------------------------------------------------------------------------------#
 
-function int get_string_length(string name);
-	get_string_length = name.len();
+typedef run_cfg_t all_enabled_devices_run_cfg_t[num_active_host_devices];
+typedef run_cfg_t all_enabled_cores_cfgs_t[num_active_hm3_cores];
+
+typedef int host_device_pad_lengths_t[num_active_host_devices];
+typedef int core_pad_lengths_t[num_active_hm3_cores];
+
+
+function int get_str_len(string name);
+	get_str_len = name.len();
 endfunction
 
 function int get_num_active_devices_in_config(active_cfgs_t cfg, int cfg_size, string dev_type) ;
@@ -227,28 +234,24 @@ function int get_num_active_devices_in_config(active_cfgs_t cfg, int cfg_size, s
  	return result;
  endfunction
 
-
-parameter int num_active_host_devices = get_num_active_devices_in_config(ACTIVE_CONFIGS, num_active_cfgs, "H");
-parameter int num_active_hm3_cores = get_num_active_devices_in_config(ACTIVE_CONFIGS, num_active_cfgs, "C");
-
-typedef run_cfg_t all_enabled_devices_run_cfg_t[num_active_host_devices];
-typedef run_cfg_t all_enabled_cores_cfgs_t[num_active_hm3_cores];
-
-//parameter max_corename_display_width = get_max_string_array_length(VERBOSE_CORES[total_num_hm3_cores]., total_num_hm3_cores);
-parameter max_corename_display_width = 14;
-
-typedef int host_device_pad_lengths_t[num_active_host_devices];
-typedef int core_pad_lengths_t[num_active_hm3_cores];
+function int get_max_func_name_width(active_cfgs_t cfg, int num_cfgs);
+	int length = 0;  cfg_name_t arr;
+	for(int i=0;i<num_cfgs;i++) begin
+		arr = cfg_name_t' (cfg[i].func_name);
+		if(length < get_str_len(string' (arr))) begin length = get_str_len(string' (arr)); end
+	end
+	return length;
+endfunction
 
 function host_device_pad_lengths_t set_host_device_pad_lengths(all_enabled_devices_run_cfg_t cfg, int cfg_size);
 	for(int i=0;i<cfg_size;i++) begin
-		set_host_device_pad_lengths[i] = (max_corename_display_width - get_string_length(string' (cfg[i].func_cfg.id_name)));
+		set_host_device_pad_lengths[i] = (max_corename_string_width - get_str_len(string' (cfg[i].func_cfg.id_name)));
 	end
 endfunction
 
 function core_pad_lengths_t set_core_pad_lengths(all_enabled_cores_cfgs_t cfg, int cfg_size);
 	for(int i=0;i<cfg_size;i++) begin
- 		set_core_pad_lengths[i] = (max_corename_display_width - get_string_length(string' (cfg[i].func_cfg.id_name)));
+ 		set_core_pad_lengths[i] = (max_corename_string_width - get_str_len(string' (cfg[i].func_cfg.id_name)));
 	end
 endfunction
 
@@ -256,15 +259,11 @@ function string get_act_func_name(active_cfg_t cfg);
     get_act_func_name = string' (cfg.func_name);
 endfunction
 
-function string get_dev_cfg_name(func_cfg_t cfg);
-    get_dev_cfg_name = string' (cfg.id_name);
-endfunction
-
-function all_enabled_devices_run_cfg_t get_active_dev_cfgs(active_cfgs_t cfg , int cfg_size);
+function all_enabled_devices_run_cfg_t get_active_dev_cfgs(active_cfgs_t cfg , int active_cfg_size);
     string dev_type = "H";
     run_cfg_t result[num_active_cfgs];
     int inx = 0;
-    for(int i=0;i<cfg_size;i++) begin
+    for(int i=0;i<active_cfg_size;i++) begin
          if( string' (cfg[i].func_type) == dev_type ) begin
              for(int j=0;j<total_num_host_devices;j++) begin
                 if( string' (ALL_DEVICE_CFGS[j].func_cfg.id_name) == string' (get_act_func_name(cfg[i])) ) begin
@@ -278,10 +277,10 @@ function all_enabled_devices_run_cfg_t get_active_dev_cfgs(active_cfgs_t cfg , i
     end
 endfunction
 
-function all_enabled_cores_cfgs_t get_active_core_cfgs(active_cfgs_t cfg , int cfg_size);
+function all_enabled_cores_cfgs_t get_active_core_cfgs(active_cfgs_t cfg , int active_cfg_size);
     string dev_type = "C";
     int inx = 0;
-    for(int i=0;i<cfg_size;i++) begin
+    for(int i=0;i<active_cfg_size;i++) begin
          if( string' (cfg[i].func_type) == dev_type ) begin
              for(int j=0;j<total_num_host_devices;j++) begin
                 if( string' (ALL_CORE_CFGS[j].id_name) == string' (get_act_func_name(cfg[i])) ) begin
@@ -294,32 +293,18 @@ function all_enabled_cores_cfgs_t get_active_core_cfgs(active_cfgs_t cfg , int c
     end
 endfunction
 
+
+parameter int num_active_host_devices = get_num_active_devices_in_config(ACTIVE_CONFIGS, num_active_cfgs, "H");
+parameter int num_active_hm3_cores = get_num_active_devices_in_config(ACTIVE_CONFIGS, num_active_cfgs, "C");
+
+parameter int max_corename_string_width = ( 1+ get_max_func_name_width(ACTIVE_CONFIGS, num_active_cfgs));
+
+
 parameter all_enabled_devices_run_cfg_t ACTIVE_DEVICE_CFGS = get_active_dev_cfgs(ACTIVE_CONFIGS, num_active_cfgs);
 parameter all_enabled_cores_cfgs_t ACTIVE_CORE_CFGS = get_active_core_cfgs(ACTIVE_CONFIGS, num_active_cfgs);
 
 parameter int host_device_pad_lengths[num_active_host_devices] = set_host_device_pad_lengths(ACTIVE_DEVICE_CFGS, num_active_host_devices);
 parameter int core_pad_lengths[num_active_hm3_cores] = set_core_pad_lengths(ACTIVE_CORE_CFGS, num_active_hm3_cores);
-
-
-function int get_max_string_array_length(string str[total_num_hm3_cores], int str_size);
-	int get_max_string_array_length = 0, length = 0;
-	for(int i=0;i<str_size;i++) begin
-		length = str.len();
-		if(length>get_max_string_array_length) get_max_string_array_length = length;
-	end
-endfunction
-
-function int get_max_array_length(bit [0:15] [7:0] arr[total_num_hm3_cores], int str_size);
-	int get_max_array_length = 0, length = 0;
-	string str;
-	for(int i=0;i<str_size;i++) begin
-		str = string' (arr[i]);
-		length = str.len();
-		if(length>get_max_array_length) get_max_array_length = length;
-	end
-endfunction
-
-
 
 //enum int unsigned { ADC = 1, CAPSENSE = 2} core_types;
 
@@ -327,12 +312,6 @@ endfunction
 
 //parameter int CFG_NAME_LENGTH = $bits (func_cfg_t.);
 //parameter int CFG_NAME_CHARS = $bits (func_cfg_t.)/8;
-
-//parameter func_cfg_t  ADC_DEVICE_C = ADC_DEVICE_CFG;
-//parameter int ADC_DEVICE_C_LENGTH = $bits (ADC_DEVICE_C);
-
-//parameter all_device_cfgs_t DEV_NAME = ALL_DEVICE_CFGS;
-
 
 
 //=======================================================
@@ -352,7 +331,6 @@ initial begin
 			ACTIVE_DEVICE_CFGS[i].func_cfg.num_regs);
 	end
 
-
     for(int i=0;i<num_active_hm3_cores;i++) begin
 		$display("Core:   %s Instances: %0d Sub instances: %0d Base Address: 0x0%0h  Num regs: %0d",
 			{ ACTIVE_CORE_CFGS[i].func_cfg.id_name, '{core_pad_lengths[i]{8'h20}} },  // pad corenames with variable spaces to generate pretty aligned output;
@@ -363,6 +341,11 @@ initial begin
 	end
 
 end
+
+//=======================================================
+//  Structural coding
+//=======================================================
+
 
 /*
 led_blinker #(.COUNT_MAX (24999999)) led_blinker_inst
