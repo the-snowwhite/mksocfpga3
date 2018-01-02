@@ -1,0 +1,55 @@
+package socboardhostcfg;
+// DE1-Soc Dev kit and I/O adaptors specific info
+//  BoardAdaptor; {STRAIGHT=0,DB25=1}
+
+    parameter int ClockHigh                   = 200000000;	// 200 MHz
+    parameter int ClockMed                    = 100000000;	// 100 MHz
+    parameter int ClockLow                     =  50000000;	//  50 MHz
+	parameter string BoardNameLow     = 32'h41524554;		// "TERA"
+    parameter string BoardNameHigh    = 32'h4E304544;		// "DE0N"
+//	parameter BoardNameLow		               = 32'h41524554;		// "TERA"
+//	parameter BoardNameHigh		               = 32'h4E304544;		// "DE0N"
+//    parameter BoardNameLow                     = 32'h4153454D;		// "MESA"
+//    parameter BoardNameHigh      = 32'h35324935;		// "5I25"
+//	parameter BoardNameHigh  = 32'h34324935;		// "5I24"
+    parameter int FPGASize                     = 9;			// Reported as 32-bit value in IDROM.vhd (9 matches Mesanet value for 5i25)
+													//   FIXME: Figure out Mesanet encoding and put something sensible here
+    parameter int  NumFPGAPins             = 144;	// Total Number of available I/O pins for Hostmot2 use Reported as 32-bit value in IDROM.vhd
+													// Proposal: On DE0 NANO board Limit to total count of gpios + arduinoconnectors + ltc + adc I/Os
+											//   Maximum of 144 pindesc entries currently hard-coded in IDROM.vhd
+    parameter int NumIOPorts                = 3;			// Number of external ports (DE0-Nano_DB25 can have 2 on each 40-pin expansion header)
+    parameter int IOWidth                      = 72;			// Number of total I/O pins = IOPorts * PortWidth
+    parameter int PortWidth                   = 24;			// Number of I/O pins per port: 17 per DB25
+    parameter int LIOWidth                    = 0;			// Number of local I/Os (used for on-board serial-port on Mesanet cards)
+    parameter int LEDCount                   = 2;			// Number of LEDs
+//    parameter SepClocks               = "true";			// Deprecated
+//    parameter OneWS                    = "true";			// Deprecated
+    parameter int BusWidth                    = 32;
+    parameter int AddrWidth                  = 16;
+    parameter int GPIOWidth                  = 36;
+    parameter int NumGPIO                    = 2;
+    parameter int MuxGPIOIOWidth        = IOWidth/NumGPIO;
+    parameter int MuxLedWidth              = LEDCount/NumGPIO;
+
+    import all_hm3_cores_cfg::*;
+
+//    ADC_DEVICE.inst.num_inst = 1;
+//    CAPSENSE_CORE.inst.num_inst = 1;
+
+//parameter all_core_cfgs_t VERBOSE_CORES = '{
+//ADC_DEVICE,
+//CAPSENSE_CORE };
+
+// // core base addresses:
+// // ADC
+//     parameter ADC_BASE_ADDR = 16'h0200;
+//     parameter ADC_STATUS_REG = 16'h0000;
+//     parameter ADC_DATA_REG = 16'h0004;
+//     parameter ADC_NUM_REGS = 2;
+// // CAPSENSOR:
+//     parameter CAPSENSE_BASE_ADDR = 16'h0300;
+//     parameter CAPSENSE_DATA_REG = 16'h0000;
+//     parameter CAPSENSE_HYSTERESIS_REG = 16'h0004;
+//     parameter CAPSENSE_NUM_REGS= 2;
+
+endpackage : socboardhostcfg
